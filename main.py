@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 # Define the path to the dataset
-path = r'C:\Users\dhivu\VSCodes\FaceRecognition\data set\Dataset'
+path = r'Enter the path to your images dataset'
 images = []
 classNames = []
 myList = os.listdir(path)
