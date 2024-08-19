@@ -5,13 +5,13 @@ import os
 from datetime import datetime
 
 # Define the path to the dataset
-path = r'Enter the path to your images dataset'
+path = r'Enter your path'
 images = []
 classNames = []
 myList = os.listdir(path)
 print(myList)
 for cl in myList:
-    curImg = cv2.imread(f'{path}/{cl}')
+    curImg = cv2.imread(os.path.join(path, cl))
     images.append(curImg)
     classNames.append(os.path.splitext(cl)[0])
 print(classNames)
@@ -40,6 +40,7 @@ encodeListKnown = findEncodings(images)
 print('Encoding Complete')
 
 cap = cv2.VideoCapture(0)
+present_students = set()
 
 while True:
     success, img = cap.read()
@@ -63,12 +64,25 @@ while True:
         if matches[matchIndex]:
             name = classNames[matchIndex].upper()
             markAttendance(name)
+            present_students.add(name)
         
         y1, x2, y2, x1 = faceLoc
         y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
         cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
         cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
         cv2.putText(img, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
+    
+    # Display present and absent students on the screen
+    y_offset = 50
+    cv2.putText(img, "Present Students:", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+    for i, student in enumerate(present_students):
+        cv2.putText(img, student, (10, y_offset + (i + 1) * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+    
+    y_offset += (len(present_students) + 1) * 30
+    cv2.putText(img, "Absent Students:", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+    absent_students = set(classNames) - present_students
+    for i, student in enumerate(absent_students):
+        cv2.putText(img, student, (10, y_offset + (i + 1) * 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
     cv2.imshow('Webcam', img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -76,3 +90,7 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+# Print present and absent students to the console
+print("Present students:", present_students)
+print("Absent students:", absent_students)
